@@ -29,17 +29,16 @@
 
 + (NSString *)sha256:(NSString *)input
 {
-    NSData *inputData = [input dataUsingEncoding:NSASCIIStringEncoding];
-    uint8_t digest[CC_SHA256_DIGEST_LENGTH] = {0};
+    const char* str = [input UTF8String];
+    unsigned char result[CC_SHA256_DIGEST_LENGTH];
+
+    CC_SHA256(str, (CC_LONG)strlen(str), result);
+
+    NSMutableString *outString = [NSMutableString stringWithCapacity:CC_SHA256_DIGEST_LENGTH * 2];
     
-    CC_SHA256(inputData.bytes, (UInt32)inputData.length, digest);
-    
-    NSData *outData = [NSData dataWithBytes:digest length:CC_SHA256_DIGEST_LENGTH];
-    NSString *outString = [outData description];
-    
-    outString = [outString stringByReplacingOccurrencesOfString:@" " withString:@""];
-    outString = [outString stringByReplacingOccurrencesOfString:@"<" withString:@""];
-    outString = [outString stringByReplacingOccurrencesOfString:@">" withString:@""];
+    for(int i = 0; i<CC_SHA256_DIGEST_LENGTH; i++) {
+        [outString appendFormat:@"%02x",result[i]];
+    }
     
     return outString;
 }
